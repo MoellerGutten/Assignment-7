@@ -11,11 +11,15 @@ public class User {
 
     private String name;
 
-    // TODO this class needs to be extended with references to Player and
-    //      the other way round (similar to the reference from Game to Player
-    //      and the other way round.
-
     private List<Player> players;
+
+    public List<Player> getPlayers() {
+        return players;
+    }
+
+    public void setPlayers(List<Player> players) {
+        this.players = players;
+    }
 
     public long getUid() {
         return uid;

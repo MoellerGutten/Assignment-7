@@ -20,7 +20,9 @@ public class Player {
     @JoinColumn
     private Game game;
 
-    // ...
+    @ManyToOne
+    @JoinColumn
+    private User user;
 
     public long getUid() {
         return uid;
@@ -45,5 +47,10 @@ public class Player {
     public void setGame(Game game) {
         this.game = game;
     }
+
+    public User getUser() { return user;}
+
+    public void setUser(User user) {this.user = user;}
+
 
 }

@@ -8,9 +8,12 @@ module rest_client {
     requires spring.boot.autoconfigure;
     requires spring.web;
     requires com.fasterxml.jackson.annotation;
+    requires javafx.graphics;
+    requires javafx.controls;
+    requires validation.api;
 
-    exports dk.dtu.compute.course02324.part4.consuming_rest.model;
-    exports dk.dtu.compute.course02324.part4.consuming_rest.wrappers;
+    exports dk.dtu.compute.course02324.part4.consuming_rest;
+
 
 
     /*

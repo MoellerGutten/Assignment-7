@@ -1,5 +1,6 @@
 package dk.dtu.compute.course02324.part4.consuming_rest;
 
+import dk.dtu.compute.course02324.part4.consuming_rest.model.User;
 import dk.dtu.compute.course02324.part4.consuming_rest.wrappers.HALWrapperGames;
 import dk.dtu.compute.course02324.part4.consuming_rest.model.Game;
 import dk.dtu.compute.course02324.part4.consuming_rest.model.Player;
@@ -66,6 +67,15 @@ public class GameSignUpClient {
 
         System.out.println("---------------------------------------------------------");
 
+        System.out.println("---------------------------------------------------------");
+
+
+        User user1 = customClient.get().uri("/user/1").retrieve().body(User.class);
+
+        System.out.println("User with uid 1 is: " + user1);
+
+        System.out.println("---------------------------------------------------------");
+
         List<Game> games = customClient.get().uri("/game").retrieve().body(HALWrapperGames.class).getGames();
 
         for (Game game: games) {
@@ -75,6 +85,13 @@ public class GameSignUpClient {
         System.out.println("---------------------------------------------------------");
 
         Player player1 = customClient.get().uri("/player/1").retrieve().body(Player.class);
+
+        String body1 = "http://localhost:8080/user/1";
+        ResponseEntity<Player> playerResponseEntity1 = customClient.put().uri("/player/1/user").
+                header("Content-Type", "text/uri-list").
+                body(body1).retrieve().toEntity(Player.class);
+
+        System.out.println("player: " + playerResponseEntity1.toString());
 
         System.out.println("Player with uid 1 is: " + player1);
 
@@ -88,6 +105,7 @@ public class GameSignUpClient {
         ResponseEntity<Player> playerResponseEntity = customClient.put().uri("/player/1/game").
                 header("Content-Type", "text/uri-list").
                 body(body).retrieve().toEntity(Player.class);
+
         System.out.println("player: " + playerResponseEntity.toString());
 
 
@@ -96,6 +114,10 @@ public class GameSignUpClient {
         game1 = customClient.get().uri("/player/1/game").retrieve().body(Game.class);
 
         System.out.println("Game attached to Player with uid 1 is: " + game1);
+
+        user1 = customClient.get().uri("/player/1/user").retrieve().body(User.class);
+
+        System.out.println("User attached to Player with uid 1 is: " + user1);
 
 
         // TODO try to read out the available games from the backend, show them on a
