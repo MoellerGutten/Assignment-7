@@ -29,7 +29,7 @@ public class Player {
     }
 
     public void setUid(long id) {
-        this.uid = uid;
+        this.uid = id;
     }
 
     public String getName() {

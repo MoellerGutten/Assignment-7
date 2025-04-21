@@ -100,9 +100,9 @@ public class GameSignUpClient {
 
         // the following put request will connect game1 with player1:
 
-        String body = "http://localhost:8080/game/1";
+        String body = "http://localhost:8080/game/2";
 
-        ResponseEntity<Player> playerResponseEntity = customClient.put().uri("/player/1/game").
+        ResponseEntity<Player> playerResponseEntity = customClient.put().uri("/player/2/game").
                 header("Content-Type", "text/uri-list").
                 body(body).retrieve().toEntity(Player.class);
 
@@ -118,6 +118,11 @@ public class GameSignUpClient {
         user1 = customClient.get().uri("/player/1/user").retrieve().body(User.class);
 
         System.out.println("User attached to Player with uid 1 is: " + user1);
+
+        Player players1 = customClient.get().uri("/game/2/players").retrieve().body(Player.class);
+
+        System.out.println("Players attacted to game with uid 2 is: " + players1);
+
 
 
         // TODO try to read out the available games from the backend, show them on a

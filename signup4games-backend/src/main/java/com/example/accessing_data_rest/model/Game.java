@@ -32,7 +32,7 @@ public class Game {
     }
 
     public void setUid(long id) {
-        this.uid = uid;
+        this.uid = id;
     }
 
 

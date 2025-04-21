@@ -97,7 +97,6 @@
 			<artifactId>javafx-controls</artifactId>
 			<version>${javafx.version}</version>
 		</dependency>
-
 	</dependencies>
 
 	<build>

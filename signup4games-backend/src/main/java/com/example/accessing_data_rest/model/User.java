@@ -23,8 +23,8 @@ public class User {
         return uid;
     }
 
-    public void setUid(long uid) {
-        this.uid = uid;
+    public void setUid(long id) {
+        this.uid = id;
     }
 
     public String getName() {
