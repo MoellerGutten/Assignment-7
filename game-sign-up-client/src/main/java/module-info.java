@@ -11,11 +11,13 @@ module rest_client {
     requires javafx.graphics;
     requires javafx.controls;
     requires validation.api;
+    requires com.fasterxml.jackson.databind;
     requires spring.core;
 
     exports dk.dtu.compute.course02324.part4.consuming_rest;
     exports dk.dtu.compute.course02324.part4.consuming_rest.model;
     exports dk.dtu.compute.course02324.part4.consuming_rest.wrappers;
+    opens dk.dtu.compute.course02324.part4.consuming_rest.wrappers to com.fasterxml.jackson.databind;
 
 
 

@@ -1,18 +1,19 @@
 package dk.dtu.compute.course02324.part4.consuming_rest;
 
 import dk.dtu.compute.course02324.part4.consuming_rest.model.Game;
+import dk.dtu.compute.course02324.part4.consuming_rest.model.GameState;
 import dk.dtu.compute.course02324.part4.consuming_rest.model.Player;
+import dk.dtu.compute.course02324.part4.consuming_rest.model.User;
 import dk.dtu.compute.course02324.part4.consuming_rest.wrappers.HALWrapperGames;
 import dk.dtu.compute.course02324.part4.consuming_rest.wrappers.HALWrapperPlayers;
+import dk.dtu.compute.course02324.part4.consuming_rest.wrappers.HALWrapperUsers;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.converter.IntegerStringConverter;
 import org.springframework.core.ParameterizedTypeReference;
@@ -43,6 +44,9 @@ public class GameSignUpApp extends Application {
     private VBox gameInfoBox2;
     private List<VBox> infoBoxes;
     private List<VBox> infoBoxes2;
+    private String signedInUser;
+    private Label signedInUserLabel;
+    private OnlineController onlineController;
     /**
      * The pane on which the actual interaction with the
      * list of persons will be added.
@@ -50,22 +54,36 @@ public class GameSignUpApp extends Application {
     private Pane root;
     private GridPane gamesPane;
 
-    RestClient customClient = RestClient.builder().
-            // requestFactory(new HttpComponentsClientHttpRequestFactory()).
-                    baseUrl("http://localhost:8080").
-            build();
+
 
     @Override
     public void start(Stage stage) {
         this.stage = stage;
+        this.onlineController = new OnlineController();
 
         root = new Pane();
 
         Button addNewGameButton = new Button("Add Game");
 
-        addNewGameButton.setOnAction(eee -> {
+        addNewGameButton.setOnAction(e -> {
             openAddGameMenu();
         });
+
+        Button signInButton = new Button("Sign in");
+        signedInUserLabel = new Label("No user selected currently");
+        signInButton.setOnAction(e -> {
+            openSignInMenu();
+        });
+
+        Button signOutButton = new Button("Sign out");
+        signOutButton.setOnAction(e -> {
+            signedInUser = null;
+            update();
+        });
+
+        Button signUpButton = new Button("Sign up");
+        signUpButton.setOnAction(e -> openSignUpUserMenu());
+
 
         gamesPane = new GridPane();
         gamesPane.setPadding(new Insets(5));
@@ -75,12 +93,14 @@ public class GameSignUpApp extends Application {
         update();
 
         ScrollPane scrollPane = new ScrollPane(gamesPane);
-        scrollPane.setMinWidth(300);
-        scrollPane.setMaxWidth(300);
+        scrollPane.setMinWidth(400);
+        scrollPane.setMaxWidth(500);
+        scrollPane.setMinHeight(300);
+        scrollPane.setMaxHeight(450);
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
 
-        VBox box = new VBox(root, addNewGameButton, scrollPane);
+        VBox box = new VBox(root,signedInUserLabel,signInButton,signOutButton, signUpButton,addNewGameButton, scrollPane);
         Scene scene = new Scene(box);
 
         this.stage.setScene(scene);
@@ -92,8 +112,15 @@ public class GameSignUpApp extends Application {
     }
 
     void update() {
+
+        if (signedInUser == null) {
+            signedInUserLabel.setText("No user selected currently");
+        } else {
+            signedInUserLabel.setText("Current user: " + signedInUser);
+        }
+
         gamesPane.getChildren().clear();
-        List<Game> games = customClient.get().uri("/game").retrieve().body(HALWrapperGames.class).getGames();
+        List<Game> games = onlineController.getGames();
         infoBoxes = new ArrayList<>();
         infoBoxes2 = new ArrayList<>();
         int i = 0;
@@ -101,16 +128,22 @@ public class GameSignUpApp extends Application {
             String gameName = game.getName();
             int minPlayers = game.getMinPlayers();
             int maxPlayers = game.getMaxPlayers();
-            // Long request for getting list of players for each game. This is converted to a list of names to display.
-            List<String> playersPerGame = customClient.get().uri("/game/"+ game.getUid() +"/players")
-                    .retrieve().body(HALWrapperPlayers.class).getPlayers()
-                    .stream().map(Player::getName).toList();
+            String owner = "";
+            if (game.getOwner() != null) {
+                owner = game.getOwner().getName();
+                System.out.println(owner);
+            } else {
+                owner = "No dumbass owner";
+            }
 
+            List<String> playersPerGame = onlineController.getPlayerPerGame(game);
             gameInfoBox = new VBox(root,
                     new Label("game: " + gameName),
                     new Label("Minimum players: " + minPlayers),
                     new Label("Maximum players: " + maxPlayers),
-                    new Label(playersPerGame.toString()));
+                    new Label(playersPerGame.toString()),
+                    new Label("Owner: " + owner));
+
             gameInfoBox.setSpacing(3);
             gameInfoBox.setPadding(new Insets(4, 8, 4, 8));
             gameInfoBox.setStyle("""
@@ -123,7 +156,8 @@ public class GameSignUpApp extends Application {
                     new Label("game: " + gameName),
                     new Label("Minimum players: " + minPlayers),
                     new Label("Maximum players: " + maxPlayers),
-                    new Label(playersPerGame.toString()));
+                    new Label(playersPerGame.toString()),
+                    new Label(owner));
             gameInfoBox2.setSpacing(3);
             gameInfoBox2.setPadding(new Insets(4, 8, 4, 8));
             gameInfoBox2.setStyle("""
@@ -142,7 +176,30 @@ public class GameSignUpApp extends Application {
                 openSignUpMenu(game, finalI);
             });
 
-            HBox entry = new HBox(root, infoBoxes.get(i), signUpButton);
+            Button joinButton = new Button("Join");
+            Button leaveButton = new Button("Leave");
+            Button startButton = new Button("Start");
+            Button deleteButton = new Button("Delete");
+
+            if (signedInUser == null) {
+                joinButton.setDisable(true);
+                leaveButton.setDisable(true);
+                startButton.setDisable(true);
+                deleteButton.setDisable(true);
+            } else {
+                joinButton.setDisable(false);
+                leaveButton.setDisable(false);
+                startButton.setDisable(false);
+                deleteButton.setDisable(false);
+            }
+
+            joinButton.setOnAction(e -> {
+                onlineController.joinGame(game, signedInUser);
+                update();
+            });
+
+
+            HBox entry = new HBox(root, infoBoxes.get(i), joinButton, leaveButton, startButton, deleteButton);
             entry.setSpacing(5.0);
             entry.setAlignment(Pos.CENTER);
             gamesPane.add(entry, 0, i);
@@ -151,6 +208,8 @@ public class GameSignUpApp extends Application {
     }
 
     void openAddGameMenu() {
+
+
         Label gameNameLabel = new Label("Enter a name for the game: ");
         Label minimumLabel = new Label("Minimum amount of players: ");
         Label maximumLabel = new Label("Maximum amount of players: ");
@@ -170,33 +229,35 @@ public class GameSignUpApp extends Application {
         createStage.setTitle("Creating game");
         createStage.setResizable(false);
         createStage.sizeToScene();
+        createStage.initModality(Modality.APPLICATION_MODAL);
         createStage.show();
 
-        createGameButton.setOnAction(eeee -> {
+        createGameButton.setOnAction(e -> {
             try {
                 String name = gameNameField.getText();
                 int minPlayers = Integer.parseInt(minimumPlayersField.getText());
                 int maxPlayers = Integer.parseInt(maximumPlayersField.getText());
                 Game game = new Game();
                 game.setName(name);
+                game.setState(GameState.SIGNUP);
                 game.setMinPlayers(minPlayers);
                 game.setMaxPlayers(maxPlayers);
-                customClient.post()
-                        .uri("/game").accept(MediaType.APPLICATION_JSON)
-                        .body(game).retrieve().toEntity(new ParameterizedTypeReference<Game>() {
-                        });
+                User owner = onlineController.searchUserByName(signedInUser).get(0);
+                System.out.println(owner);
+                game.setOwner(owner);
+                onlineController.createGame(game);
 
                 createStage.close();
                 update();
             } catch (Exception exception) {
                 // should be handled better
-                System.out.println("Invalid input");
+                System.out.println(exception.getMessage());
             }
         });
     }
 
     void openSignUpMenu(Game game, int i) {
-        List<Player> players = customClient.get().uri("/player").retrieve().body(HALWrapperPlayers.class).getPlayers();
+        List<Player> players = onlineController.getPlayers();
 
         Label userLabel = new Label("User: ");
         Label playerLabel = new Label("Player: ");
@@ -217,10 +278,10 @@ public class GameSignUpApp extends Application {
         signUpStage.setTitle("Signing up for game");
         signUpStage.setResizable(false);
         signUpStage.sizeToScene();
+        signUpStage.initModality(Modality.APPLICATION_MODAL);
         signUpStage.show();
 
         signUpInsideButton.setOnAction(ee -> {
-            String body = "http://localhost:8080/game/" + game.getUid();
             int playerUID = -1;
             for (Player player : players) {
                 if (Objects.equals(player.getName(), playerField.getText())) {
@@ -228,15 +289,91 @@ public class GameSignUpApp extends Application {
                 }
             }
             if (playerUID != -1) {
-                customClient.put().uri("/player/"+ playerUID +"/game").
-                        header("Content-Type", "text/uri-list").
-                        body(body).retrieve().toEntity(Player.class);
+                onlineController.connectPlayerToGame(game, playerUID);
                 System.out.println("Trying to do patch");
             }
             update();
             signUpStage.close();
         });
     }
+
+    void openSignUpUserMenu() {
+        Stage stage = new Stage();
+
+        Label text = new Label("Create a user for online RoboRally");
+        TextField userName = new TextField();
+
+        Button cancel = new Button("Cancel");
+        cancel.setOnAction(e -> stage.close());
+        Button register = new Button("Sign Up");
+        register.setOnAction(e -> {
+            String name = userName.getText();
+            if (name != null) {
+                User newUser = new User();
+                newUser.setName(name);
+                onlineController.createUser(newUser);
+            }
+
+            List<User> users = onlineController.getUsers();
+            for (User user : users) {
+                if (Objects.equals(user.getName(), userName.getText())) {
+                    signedInUser = user.getName();
+                    System.out.println(signedInUser);
+                }
+            }
+
+            stage.close();
+            update();
+        });
+
+        HBox buttons = new HBox(cancel, register);
+        VBox vbox = new VBox(text, userName, buttons);
+
+        Scene scene = new Scene(vbox);
+        stage.setTitle("Register user");
+        stage.setScene(scene);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.setResizable(false);
+        stage.sizeToScene();
+        stage.show();
+
+    }
+
+    void openSignInMenu() {
+        Stage stage = new Stage();
+
+        Label text = new Label("Register as user for online RoboRally");
+        TextField userName = new TextField();
+
+        Button cancel = new Button("Cancel");
+        cancel.setOnAction(e -> stage.close());
+        Button register = new Button("Sign in");
+        register.setOnAction(e -> {
+            String name = userName.getText();
+            if (name != null) {
+                stage.close();
+                List<User> users = onlineController.searchUserByName(name);
+
+                signedInUser = users.get(0).getName();
+                System.out.println(signedInUser);
+                update();
+            }
+        });
+
+        HBox buttons = new HBox(cancel, register);
+        VBox vbox = new VBox(text, userName, buttons);
+
+        Scene scene = new Scene(vbox);
+        stage.setTitle("Register user");
+        stage.setScene(scene);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.setResizable(false);
+        stage.sizeToScene();
+        stage.show();
+
+    }
+
+
     /**
      * The main method used to start the JavaFX application.
      * @param args the command line arguments

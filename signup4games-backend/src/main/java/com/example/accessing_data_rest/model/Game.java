@@ -1,10 +1,18 @@
 package com.example.accessing_data_rest.model;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 import java.util.List;
 
 @Entity
+@JsonIdentityInfo(
+        scope=Game.class,
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "uid")
 public class Game {
 
     @Id
@@ -12,7 +20,13 @@ public class Game {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long uid;
 
+    @ManyToOne
+    @NotFound(action= NotFoundAction.IGNORE)
+    private User owner;
+
     private String name;
+
+    private GameState state;
 
     private int minPlayers;
 
@@ -67,5 +81,22 @@ public class Game {
     public void setPlayers(List<Player> players) {
         this.players = players;
     }
+
+    public GameState getState() {
+        return state;
+    }
+
+    public void setState(GameState state) {
+        this.state = state;
+    }
+
+    public User getOwner() {
+        return owner;
+    }
+
+    public void setOwner(User owner) {
+        this.owner = owner;
+    }
+
 
 }

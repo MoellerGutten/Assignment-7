@@ -9,6 +9,10 @@ public class Game {
 
     private long uid;
 
+    private User owner;
+
+    private GameState state;
+
     private String name;
 
     private int minPlayers;
@@ -63,6 +67,23 @@ public class Game {
     public void setPlayers(List<Player> players) {
         this.players = players;
     }
+
+    public User getOwner() {
+        return owner;
+    }
+
+    public void setOwner(User owner) {
+        this.owner = owner;
+    }
+
+    public GameState getState() {
+        return state;
+    }
+
+    public void setState(GameState state) {
+        this.state = state;
+    }
+
 
     @Override
     public String toString() {
