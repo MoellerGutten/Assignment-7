@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.List;
 
@@ -30,6 +32,7 @@ public class Game {
     private User owner;
 
     @OneToMany(mappedBy="game")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private List<Player> players;
 
     public long getUid() {

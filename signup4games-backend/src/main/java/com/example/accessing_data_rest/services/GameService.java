@@ -51,15 +51,6 @@ public class GameService {
 
 
     public void updateGame(Game game) {
-        /*
-        Game oldGame = gameRepository.findByUid(game.getUid());
-        oldGame.setState(game.getState());
-        oldGame.setPlayers(game.getPlayers());
-        for (Player element : oldGame.getPlayers()) {
-            playerRepository.save(element);
-        }
-
-         */
         gameRepository.save(game);
     }
 

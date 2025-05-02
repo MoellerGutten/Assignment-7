@@ -27,8 +27,6 @@ public class GameSignUpGUI extends Pane {
 
     private final VBox gameOverviewBox = new VBox();
 
-    private final ScrollPane scrollPane = new ScrollPane(window);
-
     private final OnlineController onlineController;
 
     private User user = null;
@@ -37,7 +35,8 @@ public class GameSignUpGUI extends Pane {
     public GameSignUpGUI(OnlineController onlineController) {
         this.onlineController = onlineController;
 
-        // Scroll pane settings
+        // scrollPane widget settings
+        ScrollPane scrollPane = new ScrollPane(window);
         scrollPane.setMinWidth(500);
         scrollPane.setMinHeight(500);
         scrollPane.setMaxWidth(500);
@@ -45,13 +44,13 @@ public class GameSignUpGUI extends Pane {
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
 
-        // User overview box settings
+        // userOverviewBox widget settings
         userOverviewBox.setSpacing(5.0);
         userOverviewBox.setPadding(new Insets(10));
         userOverviewBox.setMaxWidth(200);
         userOverviewBox.setMaxHeight(5000);
 
-        // Game overview box settings
+        // gameOverviewBox widget settings
         gameOverviewBox.setSpacing(5.0);
         gameOverviewBox.setPadding(new Insets(10));
         gameOverviewBox.setMinWidth(300);
@@ -72,7 +71,13 @@ public class GameSignUpGUI extends Pane {
     }
 
 
+    /**
+     * Adds a game from the database to the gui
+     * @param game the game to display
+     * @param user the user connected
+     */
     private void addGameToView(Game game, User user) {
+        // TextArea widget settings
         TextArea infoField = new TextArea();
         infoField.setWrapText(true);
         infoField.setEditable(false);
@@ -80,6 +85,7 @@ public class GameSignUpGUI extends Pane {
         infoField.setMaxHeight(80);
         infoField.setText(game.toString());
 
+        // Join button logic
         Button joinButton = new Button("Join");
         joinButton.setOnAction(
                 e -> {
@@ -111,6 +117,7 @@ public class GameSignUpGUI extends Pane {
             }
         }
 
+        // leave button logic
         Button leaveButton = new Button("Leave");
         leaveButton.setOnAction(
                 e -> {
@@ -133,11 +140,11 @@ public class GameSignUpGUI extends Pane {
                         leaveButton.setDisable(false);
                         break;
                     }
-
                 }
             }
         }
 
+        // start button logic
         Button startButton = new Button("Start");
         startButton.setOnAction(
                 e -> {
@@ -155,15 +162,10 @@ public class GameSignUpGUI extends Pane {
         }
 
 
+        // delete button logic
         Button deleteButton = new Button("Delete");
         deleteButton.setOnAction(
                 e -> {
-                    List<Player> players = game.getPlayers();
-                    if (players != null && user != null) {
-                        for (Player element : players) {
-                            onlineController.deletePlayer(element);
-                        }
-                    }
                     onlineController.deleteGame(game);
 
                     update(user);
@@ -186,18 +188,26 @@ public class GameSignUpGUI extends Pane {
     }
 
 
+    /**
+     * Prompts the user for game name, minPlayers and maxPlayers
+     * and makes a post to create a game with the correct values
+     * @param user the user to be connected as owner
+     */
     private void createNewGame(User user) {
         if (user != null) {
+            // Game name dialog
             TextInputDialog gameNameDialog = new TextInputDialog();
             gameNameDialog.setTitle("Game name");
             gameNameDialog.setHeaderText("Enter a game name");
             Optional<String> gameName = gameNameDialog.showAndWait();
 
+            // Min players dialog
             ChoiceDialog<Integer> minDialog = new ChoiceDialog<>(PLAYER_NUMBER_OPTIONS.get(0), PLAYER_NUMBER_OPTIONS);
             minDialog.setTitle("Min players");
             minDialog.setHeaderText("Select Minimum number of players");
             Optional<Integer> minPlayers = minDialog.showAndWait();
 
+            // Max players dialog
             ChoiceDialog<Integer> maxDialog = new ChoiceDialog<>(PLAYER_NUMBER_OPTIONS.get(4), PLAYER_NUMBER_OPTIONS);
             maxDialog.setTitle("Max players");
             maxDialog.setHeaderText("Select maximum number of players");
@@ -221,6 +231,9 @@ public class GameSignUpGUI extends Pane {
         }
     }
 
+    /**
+     * Adds the users in the database to the gui
+     */
     private void addUserView() {
         userOverviewBox.getChildren().clear();
 
@@ -243,6 +256,10 @@ public class GameSignUpGUI extends Pane {
         }
     }
 
+    /**
+     * Updates the widgets in the gui, to check if there is new info from the backend
+     * @param user the user logged in
+     */
     private void update(User user) {
         gameOverviewBox.getChildren().clear();
         userOverviewBox.getChildren().clear();
@@ -268,12 +285,15 @@ public class GameSignUpGUI extends Pane {
 
         addUserView();
 
-        updateMainbuttons();
+        updateMainButtons();
 
         window.getChildren().addAll(userTextLabel, mainButtons, overviewBox);
     }
 
-    private void updateMainbuttons() {
+    /**
+     * Updates the main buttons visually (sign in, sign out, sign up, refresh, add new game)
+     */
+    private void updateMainButtons() {
         Button signInButton = new Button("Sign in");
         signInButton.setOnAction(
                 e -> {
@@ -306,6 +326,7 @@ public class GameSignUpGUI extends Pane {
                     signUpDialog.setTitle("Sign up as a user");
                     signUpDialog.setHeaderText("Enter user name");
                     Optional<String> userName = signUpDialog.showAndWait();
+
                     if (userName.isPresent()) {
                         User newUser = onlineController.signUp(userName.get());
                         if (newUser != null) {
