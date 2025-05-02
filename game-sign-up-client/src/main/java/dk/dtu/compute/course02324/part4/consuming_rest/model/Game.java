@@ -1,28 +1,31 @@
 package dk.dtu.compute.course02324.part4.consuming_rest.model;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonIdentityInfo(
+        scope=Game.class,
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "uid")
 public class Game {
 
     private long uid;
 
     private String name;
 
+    private GameState state;
+
     private int minPlayers;
 
     private int maxPlayers;
 
-    // TODO There could be more attributes here, kie
-    //      in which state is the sign up for the game, did
-    //      the game started or finish (after the game started
-    //      you might not want new players coming in etc.)
-    //      See analogous classes in backend.
+    private User owner;
 
     private List<Player> players;
-
 
     public long getUid() {
         return uid;
@@ -64,14 +67,27 @@ public class Game {
         this.players = players;
     }
 
+    public GameState getState() {
+        return this.state;
+    }
+
+    public void setState(GameState state) {
+        this.state = state;
+    }
+
+    public User getOwner() {
+        return owner;
+    }
+
+    public void setOwner(User owner) {
+        this.owner = owner;
+    }
+
     @Override
     public String toString() {
-        return "Game{" +
-                "uid=" + uid +
-                ", name='" + name + '\'' +
-                ", minPlayers=" + minPlayers +
-                ", maxPlayers=" + maxPlayers +
-                // ", players=" + players +
-                '}';
+        return "Game = " + name +
+                "\nMinimum players = " + minPlayers +
+                "\nMaximum players = " + maxPlayers +
+                "\nplayers = " + players;
     }
 }

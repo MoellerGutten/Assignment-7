@@ -1,10 +1,17 @@
 package dk.dtu.compute.course02324.part4.consuming_rest;
 
+import dk.dtu.compute.course02324.part4.consuming_rest.model.User;
 import dk.dtu.compute.course02324.part4.consuming_rest.wrappers.HALWrapperGames;
 import dk.dtu.compute.course02324.part4.consuming_rest.model.Game;
 import dk.dtu.compute.course02324.part4.consuming_rest.model.Player;
 
+import dk.dtu.compute.course02324.part4.consuming_rest.wrappers.HALWrapperPlayers;
+import javafx.scene.Scene;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.codec.CodecConfigurer;
 import org.springframework.web.client.RestClient;
 
 import java.util.List;
@@ -41,10 +48,23 @@ public class GameSignUpClient {
          *
          */
 
+
         RestClient customClient = RestClient.builder().
                 // requestFactory(new HttpComponentsClientHttpRequestFactory()).
                 baseUrl("http://localhost:8080").
                 build();
+
+
+        // Creates a game
+        /*
+        String body_game = "{\"maxPlayers\": 2,\"minPlayers\": 6,\"name\":\"Does this work\"}";
+
+        ResponseEntity<Game> test = customClient.post().uri("/game").
+                header("Content-Type", "application/json").
+                body(body_game).retrieve().toEntity(Game.class);
+
+         */
+
 
         // String result = customClient.get().uri("/game").retrieve().body(String.class);
         String result = customClient.get().uri("/").retrieve().body(String.class);
@@ -74,6 +94,15 @@ public class GameSignUpClient {
 
         System.out.println("---------------------------------------------------------");
 
+        List<Player> players = customClient.get().uri("/game/1/players").retrieve().body(HALWrapperPlayers.class).getPlayers();
+
+        for (Player player: players) {
+            System.out.println(player);
+        }
+        System.out.println("HERE!!!");
+
+        System.out.println("---------------------------------------------------------");
+
         Player player1 = customClient.get().uri("/player/1").retrieve().body(Player.class);
 
         System.out.println("Player with uid 1 is: " + player1);
@@ -91,12 +120,30 @@ public class GameSignUpClient {
         System.out.println("player: " + playerResponseEntity.toString());
 
 
-        System.out.println("---------------------------------------------------------");
-
         game1 = customClient.get().uri("/player/1/game").retrieve().body(Game.class);
-
         System.out.println("Game attached to Player with uid 1 is: " + game1);
 
+        System.out.println("---------------------------------------------------------");
+
+        /*
+
+
+        String body_user1 = "http://localhost:8080/user/1";
+
+        ResponseEntity<Player> userResponseEntity = customClient.put().uri("/player/1/user").
+                header("Content-Type", "text/uri-list").
+                body(body_user1).retrieve().toEntity(Player.class);
+        System.out.println("player: " + userResponseEntity.toString());
+
+        User user1 = customClient.get().uri("/player/1/user").retrieve().body(User.class);
+        System.out.println("Player with user is: " + user1);
+
+        player1 = customClient.get().uri("/player/1").retrieve().body(Player.class);
+        System.out.println("Player with uid 1 is: " + player1);
+
+        System.out.println("---------------------------------------------------------");
+
+        */
 
         // TODO try to read out the available games from the backend, show them on a
         //      simple graphical GUI and sign up for a game using some of the operations
