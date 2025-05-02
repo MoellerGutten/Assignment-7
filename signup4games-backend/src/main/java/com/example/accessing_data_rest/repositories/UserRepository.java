@@ -15,4 +15,5 @@ public interface UserRepository extends PagingAndSortingRepository<User, Long>, 
 
     List<User> findByName(@Param("name") String name);
 
+   User findByUid(@Param("uid") long uid);
 }

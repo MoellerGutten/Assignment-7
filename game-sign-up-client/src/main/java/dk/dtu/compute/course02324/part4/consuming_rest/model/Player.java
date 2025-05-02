@@ -1,8 +1,14 @@
 package dk.dtu.compute.course02324.part4.consuming_rest.model;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonIdentityInfo(
+        scope=Player.class,
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "uid")
 public class Player {
 
     private long uid;
@@ -18,7 +24,7 @@ public class Player {
         return uid;
     }
 
-    public void setUid(long id) {
+    public void setUid(long uid) {
         this.uid = uid;
     }
 
@@ -48,12 +54,7 @@ public class Player {
 
     @Override
     public String toString() {
-        return "Player{" +
-                "uid=" + uid +
-                ", name='" + name + '\'' +
-                ", game=" + (game != null ? game.getName() : "<none>") +
-                ", user=" + (user != null ? user.getName() : "<none>") +
-                '}';
+        return name;
     }
 
 }

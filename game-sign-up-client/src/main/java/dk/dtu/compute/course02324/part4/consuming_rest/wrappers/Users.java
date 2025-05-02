@@ -9,7 +9,7 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Users {
 
-    private List<User> user;
+    public List<User> user;
 
     public List<User> getUser() {
         return user;

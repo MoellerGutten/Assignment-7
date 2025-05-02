@@ -1,19 +1,21 @@
 package dk.dtu.compute.course02324.part4.consuming_rest.model;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonIdentityInfo(
+        scope=User.class,
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "uid")
 public class User {
 
     private long uid;
 
     private String name;
-
-    // TODO this class needs to be extended with references to Player and
-    //      the other way round (similar to the reference from Game to Player
-    //      and the other way round.
 
     private List<Player> players;
 
@@ -21,7 +23,7 @@ public class User {
         return uid;
     }
 
-    public void setUid(long id) {
+    public void setUid(long uid) {
         this.uid = uid;
     }
 
@@ -31,6 +33,14 @@ public class User {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public List<Player> getPlayers() {
+        return players;
+    }
+
+    public void setPlayers(List<Player> players) {
+        this.players = players;
     }
 
     @Override
